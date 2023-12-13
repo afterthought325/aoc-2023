@@ -1,6 +1,6 @@
 #![feature(slice_group_by)]
 
-use std::cmp::Ordering;
+use counter::Counter;
 advent_of_code::solution!(7);
 
 
@@ -11,7 +11,7 @@ pub fn part_one(input: &str) -> Option<u32> {
         let (card_str, bid_str) = line.split_once(" ").unwrap();
         let cards = convert_hand(card_str, false);
         let bid = bid_str.parse::<u32>().unwrap();
-        let hand_type = derive_hand_type(&cards, false);
+        let hand_type = derive_hand_type(&cards);
         let hand = Hand {
             hand_type: hand_type,
             cards: cards,
@@ -37,7 +37,7 @@ pub fn part_two(input: &str) -> Option<u32> {
         let (card_str, bid_str) = line.split_once(" ").unwrap();
         let cards = convert_hand(card_str, true);
         let bid = bid_str.parse::<u32>().unwrap();
-        let hand_type = derive_hand_type(&cards, true);
+        let hand_type = derive_hand_type(&cards);
         let hand = Hand {
             hand_type: hand_type,
             cards: cards,
@@ -96,48 +96,58 @@ struct Hand {
     bid: u32,
 }
 
-fn derive_hand_type(input: &Vec<u32>, joker: bool) -> HandType {
-    let mut hand = input.clone();
-    // numbers are sorted least to greatest;
-    hand.sort();
-    // numbers are grouped into individual vectors
-    let mut groups: Vec<_> = hand.group_by(|a,b| a == b).collect();
-    // groups are sorted from largest to shortest;
-    groups.sort_by(|a,b| {
-    let a_len = a.len();
-    let b_len = b.len();
-    b_len.cmp(&a_len)
-    });
-    if groups.len() == 1 { // only 1 possibility
-        return HandType::FiveOfKind;
-    } else if groups.len() == 2 { // either FourOfKind or FullHouse
-        if groups.iter().any(|&x| x.iter().any(|&x| x == 1u32)) && joker { //  One of the groups are jokers so is a five of a kind
-            return HandType::FiveOfKind;
-        }
-        else if groups[0].len() == 4 {
-            return HandType::FourOfKind;
-        } else {
-            return HandType::FullHouse;
-        }
-    } else if groups.len() == 3 { // either ThreeOfKind or TwoPair
-        if groups.iter().any(|&x| x.iter().any(|&x| x == 1u32)) && joker { //  One of the groups are jokers so it's gonna get interesting
-            if groups[0].len() == 2{
-            } {
-                return HandType::ThreeOfKind;
-            } else {
-                return HandType::TwoPair;
+fn derive_hand_type(input: &Vec<u32>) -> HandType {
+    let hand = input.clone();
+    let mut groups = hand.iter().collect::<Counter<_, u32>>();
+    let jokers = match groups.remove(&1) { // Find out how many jokers were in the hand if any
+        Some(x) => x,
+        None => 0u32,
+    };
+
+    // get a vector of tuples sorted by most common card to least common card and their corresponding amounts;
+    let most_common: Vec<(&u32, u32)> = groups.most_common_ordered();
+
+    match jokers {
+        5 => HandType::FiveOfKind,
+        4 => HandType::FiveOfKind, // any card + 4 Jokers == FourOfKind
+        3 => {
+            match most_common[0].1 {  
+                2 => HandType::FiveOfKind, // OnePair + 3 jokers == FiveOfKind
+                1 => HandType::FourOfKind, // any card + 3 jokers == FourOfKind
+                _ => HandType::HighCard,
             }
-            return HandType::FiveOfKind;
+        },
+        2 => {
+            match most_common[0].1 {
+                3 => HandType::FiveOfKind, // 3OfKind + 2 jokers == FiveOfKind
+                2 => HandType::FourOfKind, // OnePair + 2 jokers == Four of a Kind
+                1 => HandType::ThreeOfKind,  // Means there must be 3 unique cards left
+                _ => HandType::HighCard,
+            }
+        },
+        1 => {
+            match most_common[0].1 {
+                4 => HandType::FiveOfKind, // FourOfKind + 1 Joker == FiveOfKind
+                3 => HandType::FourOfKind, // ThreeOfKind + 1 Joker == FourOfKind
+                2 => { if most_common.len() == 2 { // 2Pair + 1 Joker == FullHouse
+                            HandType::FullHouse
+                       } else { // OnePair + 1 Joker ==  ThreeOfKind
+                            HandType::ThreeOfKind
+                       }
+                    },
+                1 => HandType::OnePair,
+                _ => HandType::HighCard,
+            }
         }
-        if groups[0].len() == 3 {
-            return HandType::ThreeOfKind;
-        } else {
-            return HandType::TwoPair;
+        _ => {
+            match most_common[0].1 {
+                5 => HandType::FiveOfKind,
+                4 => HandType::FourOfKind,
+                3 => { if most_common[1].1 == 2 { HandType::FullHouse} else { HandType::ThreeOfKind} },
+                2 => { if most_common[1].1 == 2 { HandType::TwoPair} else { HandType::OnePair} },
+                _ => HandType::HighCard,
+            }
         }
-    } else if groups.len() == 4 {
-        return HandType::OnePair;
-    } else {
-        return HandType::HighCard;
     }
 }
 
@@ -224,28 +234,30 @@ mod tests {
         let two_pair: Vec<u32> = vec![2,2,3,3,4];
         let one_pair: Vec<u32> = vec![2,2,3,4,5];
         let high_card: Vec<u32> = vec![2,3,4,5,6];
-        assert_eq!(derive_hand_type(&five_kind, false), HandType::FiveOfKind);
-        assert_eq!(derive_hand_type(&four_kind, false), HandType::FourOfKind);
-        assert_eq!(derive_hand_type(&full_house, false), HandType::FullHouse);
-        assert_eq!(derive_hand_type(&three_kind, false), HandType::ThreeOfKind);
-        assert_eq!(derive_hand_type(&two_pair, false), HandType::TwoPair);
-        assert_eq!(derive_hand_type(&one_pair, false), HandType::OnePair);
-        assert_eq!(derive_hand_type(&high_card, false), HandType::HighCard);
+        assert_eq!(derive_hand_type(&five_kind), HandType::FiveOfKind);
+        assert_eq!(derive_hand_type(&four_kind), HandType::FourOfKind);
+        assert_eq!(derive_hand_type(&full_house), HandType::FullHouse);
+        assert_eq!(derive_hand_type(&three_kind), HandType::ThreeOfKind);
+        assert_eq!(derive_hand_type(&two_pair), HandType::TwoPair);
+        assert_eq!(derive_hand_type(&one_pair), HandType::OnePair);
+        assert_eq!(derive_hand_type(&high_card), HandType::HighCard);
         // Joker
+        let five_joker: Vec<u32> = vec![1,1,1,1,1];
+        let four_joker: Vec<u32> = vec![2,1,1,1,1];
         let five_kind: Vec<u32> = vec![1,14,14,14,14];
         let four_kind: Vec<u32> = vec![1,14,14,14,5];
         let full_house: Vec<u32> = vec![1,14,14,9,9];
         let three_kind: Vec<u32> = vec![1,14,14,2,9];
-        let two_pair: Vec<u32> = vec![1,2,3,3,4];
         let one_pair: Vec<u32> = vec![1,2,3,4,5];
-        let high_card: Vec<u32> = vec![1,2,3,4,5];
-        assert_eq!(derive_hand_type(&five_kind, false), HandType::FiveOfKind);
-        assert_eq!(derive_hand_type(&four_kind, false), HandType::FourOfKind);
-        assert_eq!(derive_hand_type(&full_house, false), HandType::FullHouse);
-        assert_eq!(derive_hand_type(&three_kind, false), HandType::ThreeOfKind);
-        assert_eq!(derive_hand_type(&two_pair, false), HandType::TwoPair);
-        assert_eq!(derive_hand_type(&one_pair, false), HandType::OnePair);
-        assert_eq!(derive_hand_type(&high_card, false), HandType::HighCard);
+        assert_eq!(derive_hand_type(&five_joker), HandType::FiveOfKind);
+        assert_eq!(derive_hand_type(&four_joker), HandType::FiveOfKind);
+        assert_eq!(derive_hand_type(&five_kind), HandType::FiveOfKind);
+        assert_eq!(derive_hand_type(&four_kind), HandType::FourOfKind);
+        assert_eq!(derive_hand_type(&full_house), HandType::FullHouse);
+        assert_eq!(derive_hand_type(&three_kind), HandType::ThreeOfKind);
+        assert_eq!(derive_hand_type(&two_pair), HandType::TwoPair);
+        assert_eq!(derive_hand_type(&one_pair), HandType::OnePair);
+        assert_eq!(derive_hand_type(&high_card), HandType::HighCard);
     }
 
     #[test]
@@ -257,6 +269,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(5905));
     }
 }
