@@ -14,17 +14,13 @@ const MAX_BLUE: usize = 14;
 pub fn part_one(input: &str) -> Option<u32> {
     let lines = input.lines();
 
-    let mut games = Vec::<Vec::<Draw>>::new();
+    let mut games = Vec::<Vec<Draw>>::new();
 
     for line in lines {
-        let game: Vec<_> = line.split(":")
-            .last()
-            .unwrap()
-            .split(";")
-            .collect();
+        let game: Vec<_> = line.split(":").last().unwrap().split(";").collect();
         let mut draws = Vec::<Draw>::new();
         for x in &game {
-            let mut draw = Draw{
+            let mut draw = Draw {
                 red: 0,
                 green: 0,
                 blue: 0,
@@ -50,7 +46,7 @@ pub fn part_one(input: &str) -> Option<u32> {
     let mut total = 0;
     for (position, game) in games.iter().enumerate() {
         if check_game(game) {
-            total += position + 1; 
+            total += position + 1;
         }
     }
 
@@ -60,17 +56,13 @@ pub fn part_one(input: &str) -> Option<u32> {
 pub fn part_two(input: &str) -> Option<u32> {
     let lines = input.lines();
 
-    let mut games = Vec::<Vec::<Draw>>::new();
+    let mut games = Vec::<Vec<Draw>>::new();
 
     for line in lines {
-        let game: Vec<_> = line.split(":")
-            .last()
-            .unwrap()
-            .split(";")
-            .collect();
+        let game: Vec<_> = line.split(":").last().unwrap().split(";").collect();
         let mut draws = Vec::<Draw>::new();
         for x in &game {
-            let mut draw = Draw{
+            let mut draw = Draw {
                 red: 0,
                 green: 0,
                 blue: 0,
@@ -95,14 +87,14 @@ pub fn part_two(input: &str) -> Option<u32> {
 
     let mut total = 0;
     for game in games {
-        let (red,green,blue) = find_min_dice(&game);
+        let (red, green, blue) = find_min_dice(&game);
         let power = red * green * blue;
         total += power;
     }
     Some(u32::try_from(total).unwrap())
 }
 
-fn check_game( game: &Vec::<Draw>) -> bool {
+fn check_game(game: &Vec<Draw>) -> bool {
     for draw in game {
         if draw.red > MAX_RED {
             //println!("red: {} is greater than max: {}", draw.red, MAX_RED);
@@ -118,22 +110,22 @@ fn check_game( game: &Vec::<Draw>) -> bool {
     true
 }
 
-fn find_min_dice( game: &Vec::<Draw>) -> (usize,usize,usize) {
-    let mut red = game.iter()
-        .map( |x| x.red)
-        .max().unwrap();
-    let mut green = game.iter()
-        .map( |x| x.green)
-        .max().unwrap();
-    let mut blue = game.iter()
-        .map( |x| x.blue)
-        .max().unwrap();
-    
-    if red == 0 { red = 1};
-    if green == 0 { green = 1};
-    if blue == 0 { blue = 1};
+fn find_min_dice(game: &Vec<Draw>) -> (usize, usize, usize) {
+    let mut red = game.iter().map(|x| x.red).max().unwrap();
+    let mut green = game.iter().map(|x| x.green).max().unwrap();
+    let mut blue = game.iter().map(|x| x.blue).max().unwrap();
 
-    (red,green,blue)
+    if red == 0 {
+        red = 1
+    };
+    if green == 0 {
+        green = 1
+    };
+    if blue == 0 {
+        blue = 1
+    };
+
+    (red, green, blue)
 }
 
 #[cfg(test)]

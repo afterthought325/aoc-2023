@@ -3,9 +3,8 @@
 use counter::Counter;
 advent_of_code::solution!(7);
 
-
 pub fn part_one(input: &str) -> Option<u32> {
-    let lines: Vec<&str>= input.split("\n").collect();
+    let lines: Vec<&str> = input.split("\n").collect();
     let mut hands = Vec::<Hand>::new();
     for line in lines {
         let (card_str, bid_str) = line.split_once(" ").unwrap();
@@ -15,23 +14,22 @@ pub fn part_one(input: &str) -> Option<u32> {
         let hand = Hand {
             hand_type: hand_type,
             cards: cards,
-            bid: bid
+            bid: bid,
         };
         hands.push(hand);
     }
     hands.sort();
 
-    let mut result:u32 = 0;
+    let mut result: u32 = 0;
     for (index, hand) in hands.iter().enumerate() {
         result += (u32::try_from(index).unwrap() + 1) * hand.bid;
     }
-
 
     Some(result)
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
-    let lines: Vec<&str>= input.split("\n").collect();
+    let lines: Vec<&str> = input.split("\n").collect();
     let mut hands = Vec::<Hand>::new();
     for line in lines {
         let (card_str, bid_str) = line.split_once(" ").unwrap();
@@ -41,17 +39,16 @@ pub fn part_two(input: &str) -> Option<u32> {
         let hand = Hand {
             hand_type: hand_type,
             cards: cards,
-            bid: bid
+            bid: bid,
         };
         hands.push(hand);
     }
     hands.sort();
 
-    let mut result:u32 = 0;
+    let mut result: u32 = 0;
     for (index, hand) in hands.iter().enumerate() {
         result += (u32::try_from(index).unwrap() + 1) * hand.bid;
     }
-
 
     Some(result)
 }
@@ -64,17 +61,21 @@ fn swap_for_value(input: char, joker: bool) -> u32 {
             'A' => 14,
             'K' => 13,
             'Q' => 12,
-            'J' => if joker { 1 } else { 11 },
+            'J' => {
+                if joker {
+                    1
+                } else {
+                    11
+                }
+            }
             'T' => 10,
-             _  => 0,
+            _ => 0,
         }
     }
 }
 
 fn convert_hand(input: &str, joker: bool) -> Vec<u32> {
-    input.chars()
-    .map(|x| swap_for_value(x, joker))
-    .collect()
+    input.chars().map(|x| swap_for_value(x, joker)).collect()
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Debug, Clone, Copy)]
@@ -85,9 +86,8 @@ enum HandType {
     ThreeOfKind = 4,
     FullHouse = 5,
     FourOfKind = 6,
-    FiveOfKind = 7
+    FiveOfKind = 7,
 }
-
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Debug, Clone)]
 struct Hand {
@@ -99,7 +99,8 @@ struct Hand {
 fn derive_hand_type(input: &Vec<u32>) -> HandType {
     let hand = input.clone();
     let mut groups = hand.iter().collect::<Counter<_, u32>>();
-    let jokers = match groups.remove(&1) { // Find out how many jokers were in the hand if any
+    let jokers = match groups.remove(&1) {
+        // Find out how many jokers were in the hand if any
         Some(x) => x,
         None => 0u32,
     };
@@ -111,71 +112,83 @@ fn derive_hand_type(input: &Vec<u32>) -> HandType {
         5 => HandType::FiveOfKind,
         4 => HandType::FiveOfKind, // any card + 4 Jokers == FourOfKind
         3 => {
-            match most_common[0].1 {  
+            match most_common[0].1 {
                 2 => HandType::FiveOfKind, // OnePair + 3 jokers == FiveOfKind
                 1 => HandType::FourOfKind, // any card + 3 jokers == FourOfKind
                 _ => HandType::HighCard,
             }
-        },
+        }
         2 => {
             match most_common[0].1 {
-                3 => HandType::FiveOfKind, // 3OfKind + 2 jokers == FiveOfKind
-                2 => HandType::FourOfKind, // OnePair + 2 jokers == Four of a Kind
-                1 => HandType::ThreeOfKind,  // Means there must be 3 unique cards left
+                3 => HandType::FiveOfKind,  // 3OfKind + 2 jokers == FiveOfKind
+                2 => HandType::FourOfKind,  // OnePair + 2 jokers == Four of a Kind
+                1 => HandType::ThreeOfKind, // Means there must be 3 unique cards left
                 _ => HandType::HighCard,
             }
-        },
+        }
         1 => {
             match most_common[0].1 {
                 4 => HandType::FiveOfKind, // FourOfKind + 1 Joker == FiveOfKind
                 3 => HandType::FourOfKind, // ThreeOfKind + 1 Joker == FourOfKind
-                2 => { if most_common.len() == 2 { // 2Pair + 1 Joker == FullHouse
-                            HandType::FullHouse
-                       } else { // OnePair + 1 Joker ==  ThreeOfKind
-                            HandType::ThreeOfKind
-                       }
-                    },
+                2 => {
+                    if most_common.len() == 2 {
+                        // 2Pair + 1 Joker == FullHouse
+                        HandType::FullHouse
+                    } else {
+                        // OnePair + 1 Joker ==  ThreeOfKind
+                        HandType::ThreeOfKind
+                    }
+                }
                 1 => HandType::OnePair,
                 _ => HandType::HighCard,
             }
         }
-        _ => {
-            match most_common[0].1 {
-                5 => HandType::FiveOfKind,
-                4 => HandType::FourOfKind,
-                3 => { if most_common[1].1 == 2 { HandType::FullHouse} else { HandType::ThreeOfKind} },
-                2 => { if most_common[1].1 == 2 { HandType::TwoPair} else { HandType::OnePair} },
-                _ => HandType::HighCard,
+        _ => match most_common[0].1 {
+            5 => HandType::FiveOfKind,
+            4 => HandType::FourOfKind,
+            3 => {
+                if most_common[1].1 == 2 {
+                    HandType::FullHouse
+                } else {
+                    HandType::ThreeOfKind
+                }
             }
-        }
+            2 => {
+                if most_common[1].1 == 2 {
+                    HandType::TwoPair
+                } else {
+                    HandType::OnePair
+                }
+            }
+            _ => HandType::HighCard,
+        },
     }
 }
-
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn test_compare_hands(){
+    fn test_compare_hands() {
         let hand1 = Hand {
             hand_type: HandType::FiveOfKind,
-            cards: vec![2,2,2,2,2],
+            cards: vec![2, 2, 2, 2, 2],
             bid: 122,
         };
         let hand2 = Hand {
             hand_type: HandType::FiveOfKind,
-            cards: vec![3,3,3,3,3],
+            cards: vec![3, 3, 3, 3, 3],
             bid: 222,
         };
         let hand3 = Hand {
             hand_type: HandType::FourOfKind,
-            cards: vec![4,3,3,3,3],
+            cards: vec![4, 3, 3, 3, 3],
             bid: 222,
         };
         let hand4 = Hand {
             hand_type: HandType::FiveOfKind,
-            cards: vec![2,2,2,2,2],
+            cards: vec![2, 2, 2, 2, 2],
             bid: 122,
         };
         assert_eq!(hand1.cmp(&hand2), Ordering::Less);
@@ -184,25 +197,25 @@ mod tests {
     }
 
     #[test]
-    fn test_sort_hands(){
+    fn test_sort_hands() {
         let hand1 = Hand {
             hand_type: HandType::FiveOfKind,
-            cards: vec![2,2,2,2,2],
+            cards: vec![2, 2, 2, 2, 2],
             bid: 122,
         };
         let hand2 = Hand {
             hand_type: HandType::FiveOfKind,
-            cards: vec![3,3,3,3,3],
+            cards: vec![3, 3, 3, 3, 3],
             bid: 222,
         };
         let hand3 = Hand {
             hand_type: HandType::FourOfKind,
-            cards: vec![4,3,3,3,3],
+            cards: vec![4, 3, 3, 3, 3],
             bid: 222,
         };
         let hand4 = Hand {
             hand_type: HandType::HighCard,
-            cards: vec![2,3,4,5,6],
+            cards: vec![2, 3, 4, 5, 6],
             bid: 122,
         };
 
@@ -216,24 +229,24 @@ mod tests {
     fn test_convert_hand() {
         // Standard
         let hand = "AKQJT98765432";
-        let converted_hand = vec![14,13,12,11,10,9,8,7,6,5,4,3,2];
+        let converted_hand = vec![14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2];
         assert_eq!(convert_hand(hand, false), converted_hand);
         // Joker
         let joker_hand = "AKQT98765432J";
-        let converted_joker_hand = vec![14,13,12,10,9,8,7,6,5,4,3,2,1];
+        let converted_joker_hand = vec![14, 13, 12, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
         assert_eq!(convert_hand(joker_hand, true), converted_joker_hand);
     }
 
     #[test]
-    fn test_hand_type(){
+    fn test_hand_type() {
         // Standard
-        let five_kind: Vec<u32> = vec![14,14,14,14,14];
-        let four_kind: Vec<u32> = vec![14,14,14,14,5];
-        let full_house: Vec<u32> = vec![14,14,14,9,9];
-        let three_kind: Vec<u32> = vec![14,14,14,2,9];
-        let two_pair: Vec<u32> = vec![2,2,3,3,4];
-        let one_pair: Vec<u32> = vec![2,2,3,4,5];
-        let high_card: Vec<u32> = vec![2,3,4,5,6];
+        let five_kind: Vec<u32> = vec![14, 14, 14, 14, 14];
+        let four_kind: Vec<u32> = vec![14, 14, 14, 14, 5];
+        let full_house: Vec<u32> = vec![14, 14, 14, 9, 9];
+        let three_kind: Vec<u32> = vec![14, 14, 14, 2, 9];
+        let two_pair: Vec<u32> = vec![2, 2, 3, 3, 4];
+        let one_pair: Vec<u32> = vec![2, 2, 3, 4, 5];
+        let high_card: Vec<u32> = vec![2, 3, 4, 5, 6];
         assert_eq!(derive_hand_type(&five_kind), HandType::FiveOfKind);
         assert_eq!(derive_hand_type(&four_kind), HandType::FourOfKind);
         assert_eq!(derive_hand_type(&full_house), HandType::FullHouse);
@@ -242,13 +255,13 @@ mod tests {
         assert_eq!(derive_hand_type(&one_pair), HandType::OnePair);
         assert_eq!(derive_hand_type(&high_card), HandType::HighCard);
         // Joker
-        let five_joker: Vec<u32> = vec![1,1,1,1,1];
-        let four_joker: Vec<u32> = vec![2,1,1,1,1];
-        let five_kind: Vec<u32> = vec![1,14,14,14,14];
-        let four_kind: Vec<u32> = vec![1,14,14,14,5];
-        let full_house: Vec<u32> = vec![1,14,14,9,9];
-        let three_kind: Vec<u32> = vec![1,14,14,2,9];
-        let one_pair: Vec<u32> = vec![1,2,3,4,5];
+        let five_joker: Vec<u32> = vec![1, 1, 1, 1, 1];
+        let four_joker: Vec<u32> = vec![2, 1, 1, 1, 1];
+        let five_kind: Vec<u32> = vec![1, 14, 14, 14, 14];
+        let four_kind: Vec<u32> = vec![1, 14, 14, 14, 5];
+        let full_house: Vec<u32> = vec![1, 14, 14, 9, 9];
+        let three_kind: Vec<u32> = vec![1, 14, 14, 2, 9];
+        let one_pair: Vec<u32> = vec![1, 2, 3, 4, 5];
         assert_eq!(derive_hand_type(&five_joker), HandType::FiveOfKind);
         assert_eq!(derive_hand_type(&four_joker), HandType::FiveOfKind);
         assert_eq!(derive_hand_type(&five_kind), HandType::FiveOfKind);
