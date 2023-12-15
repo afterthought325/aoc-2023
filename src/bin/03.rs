@@ -11,10 +11,8 @@ pub fn part_one(input: &str) -> Option<u32> {
     for (row, record) in parts_catalog.iter().enumerate() {
         for (column, cell) in record.iter().enumerate() {
             let mut val = ' ';
-            if cell.is_numeric() {
-                if is_part_number(&parts_catalog, row, column) {
-                    val = *cell;
-                }
+            if cell.is_numeric() && is_part_number(&parts_catalog, row, column) {
+                val = *cell;
             }
             filtered_catalog[row][column] = val;
         }
@@ -38,7 +36,7 @@ pub fn part_two(input: &str) -> Option<u32> {
     None
 }
 
-fn is_part_number(catalog: &Vec<Vec<char>>, row: usize, col: usize) -> bool {
+fn is_part_number(catalog: &[_], row: usize, col: usize) -> bool {
     let start_row = if row > 0 { row - 1 } else { 0 };
     let end_row = if row == catalog.len() - 1 {
         row

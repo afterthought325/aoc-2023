@@ -3,7 +3,7 @@ use std::iter::zip;
 advent_of_code::solution!(6);
 
 pub fn part_one(input: &str) -> Option<usize> {
-    let lines: Vec<_> = input.split("\n").collect();
+    let lines: Vec<_> = input.split('\n').collect();
     let times: Vec<usize> = lines[0]
         .strip_prefix("Time:")
         .unwrap()
@@ -40,17 +40,17 @@ fn dist(x: usize, time: usize) -> usize {
 }
 
 pub fn part_two(input: &str) -> Option<usize> {
-    let lines: Vec<_> = input.split("\n").collect();
+    let lines: Vec<_> = input.split('\n').collect();
     let time: usize = lines[0]
         .strip_prefix("Time:")
         .unwrap()
-        .replace(" ", "")
+        .replace(' ', "")
         .parse::<usize>()
         .unwrap();
     let distance: usize = lines[1]
         .strip_prefix("Distance:")
         .unwrap()
-        .replace(" ", "")
+        .replace(' ', "")
         .parse::<usize>()
         .unwrap();
     //let races = zip(times, distances).map(|x| Race { time: x.0, distance: x.1}).collect();

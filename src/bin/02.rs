@@ -17,7 +17,7 @@ pub fn part_one(input: &str) -> Option<u32> {
     let mut games = Vec::<Vec<Draw>>::new();
 
     for line in lines {
-        let game: Vec<_> = line.split(":").last().unwrap().split(";").collect();
+        let game: Vec<_> = line.split(':').last().unwrap().split(';').collect();
         let mut draws = Vec::<Draw>::new();
         for x in &game {
             let mut draw = Draw {
@@ -25,16 +25,16 @@ pub fn part_one(input: &str) -> Option<u32> {
                 green: 0,
                 blue: 0,
             };
-            let colors: Vec<_> = x.split(",").collect();
+            let colors: Vec<_> = x.split(',').collect();
             for color in colors {
                 if color.contains("red") {
-                    let red = color.trim().split(" ").next().unwrap();
+                    let red = color.trim().split(' ').next().unwrap();
                     draw.red = red.parse().unwrap();
                 } else if color.contains("green") {
-                    let green = color.trim().split(" ").next().unwrap();
+                    let green = color.trim().split(' ').next().unwrap();
                     draw.green = green.parse().unwrap();
                 } else if color.contains("blue") {
-                    let blue = color.trim().split(" ").next().unwrap();
+                    let blue = color.trim().split(' ').next().unwrap();
                     draw.blue = blue.parse().unwrap();
                 }
             }
@@ -59,7 +59,7 @@ pub fn part_two(input: &str) -> Option<u32> {
     let mut games = Vec::<Vec<Draw>>::new();
 
     for line in lines {
-        let game: Vec<_> = line.split(":").last().unwrap().split(";").collect();
+        let game: Vec<_> = line.split(':').last().unwrap().split(';').collect();
         let mut draws = Vec::<Draw>::new();
         for x in &game {
             let mut draw = Draw {
@@ -67,16 +67,16 @@ pub fn part_two(input: &str) -> Option<u32> {
                 green: 0,
                 blue: 0,
             };
-            let colors: Vec<_> = x.split(",").collect();
+            let colors: Vec<_> = x.split(',').collect();
             for color in colors {
                 if color.contains("red") {
-                    let red = color.trim().split(" ").next().unwrap();
+                    let red = color.trim().split(' ').next().unwrap();
                     draw.red = red.parse().unwrap();
                 } else if color.contains("green") {
-                    let green = color.trim().split(" ").next().unwrap();
+                    let green = color.trim().split(' ').next().unwrap();
                     draw.green = green.parse().unwrap();
                 } else if color.contains("blue") {
-                    let blue = color.trim().split(" ").next().unwrap();
+                    let blue = color.trim().split(' ').next().unwrap();
                     draw.blue = blue.parse().unwrap();
                 }
             }
@@ -96,21 +96,14 @@ pub fn part_two(input: &str) -> Option<u32> {
 
 fn check_game(game: &Vec<Draw>) -> bool {
     for draw in game {
-        if draw.red > MAX_RED {
-            //println!("red: {} is greater than max: {}", draw.red, MAX_RED);
-            return false;
-        } else if draw.green > MAX_GREEN {
-            //println!("green: {} is greater than max: {}", draw.green, MAX_GREEN);
-            return false;
-        } else if draw.blue > MAX_BLUE {
-            //println!("blue: {} is greater than max: {}", draw.blue, MAX_BLUE);
+        if draw.red > MAX_RED || draw.green > MAX_GREEN || draw.blue > MAX_BLUE {
             return false;
         }
     }
     true
 }
 
-fn find_min_dice(game: &Vec<Draw>) -> (usize, usize, usize) {
+fn find_min_dice(game: &[Draw]) -> (usize, usize, usize) {
     let mut red = game.iter().map(|x| x.red).max().unwrap();
     let mut green = game.iter().map(|x| x.green).max().unwrap();
     let mut blue = game.iter().map(|x| x.blue).max().unwrap();

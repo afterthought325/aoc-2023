@@ -4,17 +4,17 @@ use counter::Counter;
 advent_of_code::solution!(7);
 
 pub fn part_one(input: &str) -> Option<u32> {
-    let lines: Vec<&str> = input.split("\n").collect();
+    let lines: Vec<&str> = input.split('\n').collect();
     let mut hands = Vec::<Hand>::new();
     for line in lines {
-        let (card_str, bid_str) = line.split_once(" ").unwrap();
+        let (card_str, bid_str) = line.split_once(' ').unwrap();
         let cards = convert_hand(card_str, false);
         let bid = bid_str.parse::<u32>().unwrap();
         let hand_type = derive_hand_type(&cards);
         let hand = Hand {
-            hand_type: hand_type,
-            cards: cards,
-            bid: bid,
+            hand_type,
+            cards,
+            bid,
         };
         hands.push(hand);
     }
@@ -29,17 +29,17 @@ pub fn part_one(input: &str) -> Option<u32> {
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
-    let lines: Vec<&str> = input.split("\n").collect();
+    let lines: Vec<&str> = input.split('\n').collect();
     let mut hands = Vec::<Hand>::new();
     for line in lines {
-        let (card_str, bid_str) = line.split_once(" ").unwrap();
+        let (card_str, bid_str) = line.split_once(' ').unwrap();
         let cards = convert_hand(card_str, true);
         let bid = bid_str.parse::<u32>().unwrap();
         let hand_type = derive_hand_type(&cards);
         let hand = Hand {
-            hand_type: hand_type,
-            cards: cards,
-            bid: bid,
+            hand_type,
+            cards,
+            bid,
         };
         hands.push(hand);
     }
@@ -96,14 +96,10 @@ struct Hand {
     bid: u32,
 }
 
-fn derive_hand_type(input: &Vec<u32>) -> HandType {
-    let hand = input.clone();
+fn derive_hand_type(input: &[u32]) -> HandType {
+    let hand = input.to_owned();
     let mut groups = hand.iter().collect::<Counter<_, u32>>();
-    let jokers = match groups.remove(&1) {
-        // Find out how many jokers were in the hand if any
-        Some(x) => x,
-        None => 0u32,
-    };
+    let jokers = groups.remove(&1).unwrap_or(0u32);
 
     // get a vector of tuples sorted by most common card to least common card and their corresponding amounts;
     let most_common: Vec<(&u32, u32)> = groups.most_common_ordered();

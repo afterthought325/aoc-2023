@@ -9,9 +9,9 @@ pub fn part_one(input: &str) -> Option<u32> {
         let second_value = line.chars().rfind(char::is_ascii_digit).unwrap();
         let mut combined_value = String::from(first_value);
         combined_value.push(second_value);
-        calibration = calibration + combined_value.parse::<u32>().unwrap();
+        calibration += combined_value.parse::<u32>().unwrap();
     }
-    return Some(calibration);
+    Some(calibration)
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
@@ -33,9 +33,9 @@ pub fn part_two(input: &str) -> Option<u32> {
         let second_value = line.chars().rfind(char::is_ascii_digit).unwrap();
         let mut combined_value = String::from(first_value);
         combined_value.push(second_value);
-        calibration = calibration + combined_value.parse::<u32>().unwrap();
+        calibration += combined_value.parse::<u32>().unwrap();
     }
-    return Some(calibration);
+    Some(calibration)
 }
 
 #[cfg(test)]
